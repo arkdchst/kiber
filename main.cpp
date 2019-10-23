@@ -8,10 +8,11 @@
 sf::VertexArray * initLines(){
 	sf::VertexArray line1(sf::Lines, 2);
 	sf::VertexArray line2(sf::Lines, 2);
-	line1[0].color = sf::Color::Red;
-	line1[1].color = sf::Color::Red;
-	line2[0].color = sf::Color::Green;
-	line2[1].color = sf::Color::Green;
+
+		line1[0].color = sf::Color::Red;
+		line1[1].color = sf::Color::Red;
+		line2[0].color = sf::Color::Green;
+		line2[1].color = sf::Color::Green;
 
 
 	sf::VertexArray *lines = new sf::VertexArray[2];
