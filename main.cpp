@@ -6,29 +6,42 @@
 #include <SFML/Graphics.hpp>
 
 
-// std::vector<float> from_base(){
 
-// 	std::vector<float> a(2);
-// 	return std::vector<float> (2);
-// }
+struct Line{
+	std::vector<float> A = std::vector<float>(2,0);
+	std::vector<float> B = std::vector<float>(2,0);
+};
 
 
-std::vector<float> ** initLines(){
 
-	std::vector<float> **lines = new std::vector<float>*[2];
-		lines[0] = new std::vector<float>[2];
-			lines[0][0] = std::vector<float>(2, 0);
-			lines[0][1] = std::vector<float>(2, 0);
-		lines[1] = new std::vector<float>[2];
-			lines[1][0] = std::vector<float>(2, 0);
-			lines[1][1] = std::vector<float>(2, 0);
+
+std::vector<float> move(std::vector<float> vec, std::vector<float> delta){ //res = vec + delta
+	std::vector<float> res(2);
+	res = {vec[0] + delta[0], vec[1] + delta[1]};
+
+	return res;
+}
+
+std::vector<float> rotate(std::vector<float> vec, float a){ //a - angle
+	std::vector<float> res = std::vector<float>(vec); //copy
+	res = {	vec[0] * cos(a) - vec[1] * sin(a), 
+				vec[0] * sin(a) + vec[1] * cos(a)};
+
+	return res;	
+}
+
+
+
+Line * initLines(){
+
+	Line *lines = new Line[2];
 
 	return lines;
 
 }
 
 
-void process(std::vector<float> **lines, float time, sf::RenderWindow &window){
+void process(Line *lines, float time, sf::RenderWindow &window){
 	const float v0 = 10;
 	const float l0 = 50;
 	float a = sin(time);
@@ -36,34 +49,29 @@ void process(std::vector<float> **lines, float time, sf::RenderWindow &window){
 
 	float l = v0 * time;
 
-	float x1 = l * cos(a);
-	float y1 = l * sin(a);
+	std::vector<float> vec1 = {l, 0};
+	vec1 = rotate(vec1, a);
 
-	float x2 = (l0 * sin(b) + l) * cos(a) - l0 * sin(a) * cos(b);
-	float y2 = (l0 * sin(b) + l) * sin(a) + l0 * cos(b) * cos(a);
-
-
-
-		lines[0][1][0] = x1;
-		lines[0][1][1] = y1;
-		lines[1][0][0] = x1;
-		lines[1][0][1] = y1;
-		lines[1][1][0] = x2;
-		lines[1][1][1] = y2;
+	std::vector<float> vec2 = {l0, 0};
+	vec2 = rotate(move(rotate(vec2, M_PI/2 - b), std::vector<float>{l, 0}), a);
 
 
-	printf("%f %f %f %f\n", x1, y1, x2, y2);
+		lines[0].B = std::vector<float>(vec1);
+		lines[1].A = std::vector<float>(vec1);
+		lines[1].B = std::vector<float>(vec2);
+
+
 }
 
 
-void draw(std::vector<float> **lines, sf::RenderWindow &window){
+void draw(Line *lines, sf::RenderWindow &window){
 	sf::VertexArray line1(sf::Lines, 2);
 	sf::VertexArray line2(sf::Lines, 2);
 
-		line1[0].position = sf::Vector2f(lines[0][0][0], lines[0][0][1]);
-		line1[1].position = sf::Vector2f(lines[0][1][0], lines[0][1][1]);
-		line2[0].position = sf::Vector2f(lines[1][0][0], lines[1][0][1]);
-		line2[1].position = sf::Vector2f(lines[1][1][0], lines[1][1][1]);
+		line1[0].position = sf::Vector2f(lines[0].A[0], lines[0].A[1]);
+		line1[1].position = sf::Vector2f(lines[0].B[0], lines[0].B[1]);
+		line2[0].position = sf::Vector2f(lines[1].A[0], lines[1].A[1]);
+		line2[1].position = sf::Vector2f(lines[1].B[0], lines[1].B[1]);
 
 		line1[0].color = sf::Color::Red;
 		line1[1].color = sf::Color::Red;
@@ -84,7 +92,7 @@ int main(){
 
 	window.setView(sf::View(sf::Vector2f(250, 0), sf::Vector2f(500, -500)));
 
-	std::vector<float> **lines = initLines();
+	Line *lines = initLines();
 
 	while (window.isOpen()){
 		sf::Event event;
