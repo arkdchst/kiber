@@ -34,7 +34,7 @@ void process(sf::VertexArray * lines, float t, sf::RenderWindow &window){
 	x1 = v0 * t * cos(sin(t));
 	y1 = v0 * t * sin(sin(t));
 
-	//x2 = x1 - l0 * sin(sin(t) - cos(t));
+	x2 = x1 - l0 * sin(sin(t) - cos(t));
 	y2 = y1 + l0 * cos(sin(t) - cos(t));
 
 	lines[0][0].position = sf::Vector2f(0, 0);
