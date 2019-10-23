@@ -8,10 +8,11 @@
 sf::VertexArray * initLines(){
 	sf::VertexArray line1(sf::Lines, 2);
 	sf::VertexArray line2(sf::Lines, 2);
-	line1[0].color = sf::Color::Red;
-	line1[1].color = sf::Color::Red;
-	line2[0].color = sf::Color::Green;
-	line2[1].color = sf::Color::Green;
+
+		line1[0].color = sf::Color::Red;
+		line1[1].color = sf::Color::Red;
+		line2[0].color = sf::Color::Green;
+		line2[1].color = sf::Color::Green;
 
 
 	sf::VertexArray *lines = new sf::VertexArray[2];
@@ -33,7 +34,7 @@ void process(sf::VertexArray * lines, float t, sf::RenderWindow &window){
 	x1 = v0 * t * cos(sin(t));
 	y1 = v0 * t * sin(sin(t));
 
-	x2 = x1 - l0 * sin(sin(t) - cos(t));
+	//x2 = x1 - l0 * sin(sin(t) - cos(t));
 	y2 = y1 + l0 * cos(sin(t) - cos(t));
 
 	lines[0][0].position = sf::Vector2f(0, 0);
