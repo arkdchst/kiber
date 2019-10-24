@@ -25,23 +25,15 @@ std::vector<float> move(std::vector<float> vec, std::vector<float> delta){ //res
 std::vector<float> rotate(std::vector<float> vec, float a){ //a - angle
 	std::vector<float> res = std::vector<float>(vec); //copy
 	res = {	vec[0] * cos(a) - vec[1] * sin(a), 
-				vec[0] * sin(a) + vec[1] * cos(a)};
+			vec[0] * sin(a) + vec[1] * cos(a)};
 
 	return res;	
 }
 
 
 
-Line * initLines(){
 
-	Line *lines = new Line[2];
-
-	return lines;
-
-}
-
-
-void process(Line *lines, float time, sf::RenderWindow &window){
+void process(Line *lines, float time){
 	const float v0 = 10;
 	const float l0 = 50;
 	float a = sin(time);
@@ -92,7 +84,8 @@ int main(){
 
 	window.setView(sf::View(sf::Vector2f(250, 0), sf::Vector2f(500, -500)));
 
-	Line *lines = initLines();
+
+	Line *lines = new Line[2];
 
 	while (window.isOpen()){
 		sf::Event event;
@@ -100,7 +93,7 @@ int main(){
 				window.close();
 
 		window.clear(sf::Color::Black);
-			process(lines, time, window);
+			process(lines, time);
 			draw(lines, window);
 			window.display();
 
