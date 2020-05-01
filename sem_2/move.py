@@ -33,17 +33,8 @@ def get_angles(x, y, z):
 
 
 
-
-def stepfun(t):
-	t = t % 6
-	if t >= 0 and t < 1:
-		return (0, t)
-	if t >= 1 and t < 2:
-		return (t-1, 1)
-	if t >= 2 and t < 3:
-		return (1, 3-t)
-	if t >= 3 and t < 6:
-		return (2-t/3, 0)
+def step_fun(t):
+	return ((1 - cos(pi * t)) / 2, sin(pi * t))
 
 
 
@@ -74,3 +65,21 @@ class Leg:
 			self.set_point(point, self.z, time)
 
 
+
+class Move:
+	leg = None
+
+	x1 = None
+	x2 = None
+	onAir = None
+	dt = None
+	ready = False
+	def __init__(self, leg, x1, x2, onAir, dt, aSync = False):
+		self.leg = leg
+		self.x1 = x1
+		self.x2 = x2g
+		self.onAir = onAir
+		self.dt = dt
+
+	def tick():
+		leg
