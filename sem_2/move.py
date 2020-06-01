@@ -61,6 +61,7 @@ class Leg:
 		self.ymax = ymax
 		self.z = z
 	def set_point(self, point, z, time):#перевести ногу в точку point
+		time *= 1000
 		angles = get_angles(point[0], point[1], z)
 		for i in range(3):#выставление нужного положение трёх приводов
 			pos = angle_to_pos(angles[i], num_to_ids[self.num][i])
