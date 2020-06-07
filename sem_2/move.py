@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from Serial_Servo_Running import serial_setServo as set_servo
 from math import *
 from time import sleep
@@ -30,10 +31,10 @@ def get_angles(x, y, z):#принимает координаты точки в �
 
 
 
-def step_fun(t):#траектория шага, 0<=t<=1
+def step_fun(t):#траекторная функция фазы шага, 0<=t<=1
 	return ((1 - cos(pi * t)) / 2, sin(pi * t))
 
-def back_fun(t):#траектория движения ноги назад
+def back_fun(t):#траекторная функция опоры
 	return (1 - t, 0)
 
 '''
@@ -164,3 +165,5 @@ def move2():#походка на диагональных ногах
 			for x in moves:
 				x.tick()
 			sleep(t2)
+
+
