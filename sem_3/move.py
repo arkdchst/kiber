@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-#UNCOMMENT from Serial_Servo_Running import serial_setServo as set_servo
+from Serial_Servo_Running import serial_setServo as set_servo
 from math import *
 from time import sleep
 
-#TMP
-def set_servo(id, pos, time):
-	print('set_servo(', id, pos, time, ')')
+# #TMP
+# def set_servo(id, pos, time):
+# 	print('set_servo(', id, pos, time, ')')
 
 
 '''
@@ -74,16 +74,28 @@ class Spider:
 	tibia = 138
 
 	leg_to_servo = {0:(1,2,3), 1:(4,5,6), 2:(7,8,9), 3:(10,11,12), 4:(13,14,15), 5:(16,17,18)} # номер ноги -> номера приводов
-	middle_poss = {1: 300, 2: 461, 3: 689, 4: 500, 5: 445, 6: 705, 7: 678, 8: 453, 9: 692, 10: 681, 11: 548, 12: 316, 13: 500, 14: 555, 15: 325, 16: 300, 17: 546, 18: 310} # значния средних положений для приводов
-	half_pi_poss = {1: -85, 2: 86, 3: 1071, 4: 120, 5: 75, 6: 1090, 7: 315, 8: 87, 9: 1064, 10: 1048, 11: 922, 12: -63, 13: 875, 14: 930, 15: -67, 16: 689, 17: 920, 18: -62} # положения pi/2
+	middle_poss = {1: 300, 2: 461, 3: 689, 4: 500, 5: 449, 6: 696, 7: 678, 8: 453, 9: 692, 10: 681, 11: 548, 12: 316, 13:500, 14:550, 15:321, 16: 300, 17: 546, 18: 310}#значния средних положений для приводов
+	half_pi_poss = {1: -85, 2: 86, 3: 1071, 4:130, 5:76, 6:1061, 7: 315, 8: 87, 9: 1064, 10: 1048, 11: 922, 12: -63, 13:872, 14:914, 15:-61, 16: 689, 17: 920, 18: -62}#положения pi/2
+
 
 
 	def __init__(self):
-		self.legs = [SpiderLeg(x) for x in range(6)]
+		step_len = 70
+		notside_centre = 100
+		side_z = 118 - 30
+		notside_z = 118 - 50
+		self.ranges = {	0: ((-notside_centre-step_len, -notside_centre+step_len),	notside_z),
+						1: ((-step_len,step_len),									side_z),
+						2: ((notside_centre-step_len,notside_centre+step_len),		notside_z),
+						3: ((-notside_centre-step_len, -notside_centre+step_len),	notside_z),
+						4: ((-step_len, step_len),									side_z),
+						5: ((notside_centre-step_len, notside_centre+step_len),		notside_z)
+						}
+		self.legs = [SpiderLeg(x, range_x=self.ranges[x][0], z=self.ranges[x][1]) for x in range(6)]
 
 
 class SpiderLeg(Leg):
-	def __init__(self, leg_id, range_x=(-50, 50), range_y=(-100, -50), z = Spider.coxa + Spider.femur):
+	def __init__(self, leg_id, range_x=(-50, 50), range_y=(-80, -50), z = Spider.coxa + Spider.femur + 40):
 		self.leg_id = leg_id
 		ids = Spider.leg_to_servo[leg_id]
 		super().__init__(ids, [Spider.middle_poss[x] for x in ids], [Spider.half_pi_poss[x] for x in ids], Spider.coxa, Spider.femur, Spider.tibia, range_x, range_y, z)
