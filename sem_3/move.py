@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-from Serial_Servo_Running import serial_setServo as set_servo
 from math import *
 from time import sleep
+import threading
+import config_serial_servo as css
+import Serial_Servo_Running as ssr
 
-# #TMP
-# def set_servo(id, pos, time):
-# 	print('set_servo(', id, pos, time, ')')
+
+def set_servo(id, pos, time):
+	time *= 1000
+	time = int(time)
+	pos = int(pos)
+
+	ssr.serial_setServo(id, pos, time)
+	# print('set_servo(', id, pos, time, ')')
 
 
 '''
@@ -22,6 +29,19 @@ id приводов      num - номера ног
 
 class Leg:
 
+	def __init__(self, ids, middle_poss, half_pi_poss, coxa, femur, tibia, range_x, y, h, z):
+		self.ids = ids # [coxa, femur, tibia]
+		self.middle_poss = middle_poss
+		self.half_pi_poss = half_pi_poss
+		self.coxa = coxa; self.femur = femur; self.tibia = tibia
+		self.range_x = range_x
+		self.y = y
+		self.h = h # step height
+		self.z = z
+		self.is_fore = False
+		self.is_up = False
+
+
 	def angle_to_pos(self, angle, middle_pos, half_pi_pos): # принимает угол в радианах, возвращает позицию привода в диапазоне от 0 до 1000
 		pos = (angle / (pi / 2)) * (half_pi_pos - middle_pos) + middle_pos
 		return pos
@@ -37,33 +57,80 @@ class Leg:
 		tibia_angle = asin(((x-coxa*sin(coxa_angle))**2+(z-coxa*cos(coxa_angle))**2+y**2+tibia**2-femur**2)/(2*tibia*sqrt((x-coxa*sin(coxa_angle))**2+(z-coxa*cos(coxa_angle))**2+y**2)))-acos((y)/(sqrt((x-coxa*sin(coxa_angle))**2+(z-coxa*cos(coxa_angle))**2+y**2))) - femur_angle
 		return (coxa_angle, femur_angle, tibia_angle)
 
+	def get_angles_up(self, x, y, z, h):
+		(coxa_angle, femur_angle, tibia_angle) = self.get_angles(x, y, z)
+
+		def mirror(tibia_angle):
+			return -pi/2 - (femur_angle + tibia_angle - (-pi/2)) - femur_angle
+
+		def get_new_tibia_angle(tibia_angle):
+			return acos((self.femur * cos(femur_angle + tibia_angle + pi/2) - h) / self.femur) - femur_angle - pi/2
+		
+		if femur_angle + tibia_angle < -pi/2:
+			new_tibia_angle = mirror(get_new_tibia_angle(mirror(tibia_angle)))
+		else:
+			new_tibia_angle = get_new_tibia_angle(tibia_angle)
+
+		return (coxa_angle, femur_angle, new_tibia_angle)
+
+
 	def step_fun(self, t): # траекторная функция фазы шага, 0<=t<=1
 		return ((1 - cos(pi * t)) / 2, sin(pi * t))
 
 	def back_fun(self, t): # траекторная функция опоры
 		return (1 - t, 0)
 
-
-	def __init__(self, ids, middle_poss, half_pi_poss, coxa, femur, tibia, range_x, range_y, z):
-		self.ids = ids
-		self.middle_poss = middle_poss
-		self.half_pi_poss = half_pi_poss
-		self.coxa = coxa; self.femur = femur; self.tibia = tibia
-		self.range_x = range_x; self.range_y = range_y
-		self.z = z
-
-	def set_point(self, point, time): # перевести ногу в точку point
-		time *= 1000
-		angles = self.get_angles(point[0], point[1], self.z)
+	def set_servos(self, poss, time):
 		for i in range(3): # выставление нужного положение трёх приводов
-			pos = self.angle_to_pos(angles[i], self.middle_poss[i], self.half_pi_poss[i])
-			set_servo(self.ids[i], int(pos), int(time))
+			set_servo(self.ids[i], poss[i], time)
 
-	def set_point_norm(self, point, time): # то же что и set_point, но координаты нормируются диапазоном [0;1]
-		point = (point[0] * (self.range_x[1] - self.range_x[0]) + self.range_x[0], point[1] * (self.range_y[1] - self.range_y[0]) + self.range_y[0]) # разнормировка
-		self.set_point(point, time)
+	def angles_to_poss(self, angles):
+		poss = [self.angle_to_pos(angles[i], self.middle_poss[i], self.half_pi_poss[i]) for i in range(3)]
+		return poss
+
+	def raw_to_angles(self, raw, up=False): # перевести ногу в точку raw
+		if up:
+			angles = self.get_angles_up(raw[0], raw[1], self.z, self.h)
+		else:
+			angles = self.get_angles(raw[0], raw[1], self.z)
+		return angles
+
+	def point_to_raw(self, point): # разнормировка 1D точки
+		raw = (point * (self.range_x[1] - self.range_x[0]) + self.range_x[0], self.y)
+		return raw
 
 
+	def move(self, fore, up, time, init=False):
+		if init:
+			if fore: points = [1]
+			else: points = [0]
+		if not up and self.is_up == up and self.is_fore != fore:
+			if fore: points = [0.5, 1]
+			else: points = [0.5, 0]
+		elif up:
+			if fore: points = [1.1]
+			else: points = [0.1]
+		else:
+			if fore: points = [1]
+			else: points = [0]
+
+
+		angles_seq = [list(self.raw_to_angles(self.point_to_raw(point), up)) for point in points]
+
+		poss_seq = [self.angles_to_poss(angles) for angles in angles_seq]
+
+		def move():
+			for poss in poss_seq:
+				self.set_servos(poss, time/len(poss_seq))
+				sleep(time/len(poss_seq))
+
+		thread = threading.Thread(target=move, daemon=True)
+		thread.start()
+
+		self.is_fore = fore
+		self.is_up = up
+
+		return thread
 
 
 class Spider:
@@ -80,10 +147,12 @@ class Spider:
 
 
 	def __init__(self):
-		step_len = 70
-		notside_centre = 100
-		side_z = 118 - 30
-		notside_z = 118 - 50
+		step_len = 65
+		notside_centre = 50
+		side_z = 100
+		notside_z = 100
+		y = -60
+		h = 10
 		self.ranges = {	0: ((-notside_centre-step_len, -notside_centre+step_len),	notside_z),
 						1: ((-step_len,step_len),									side_z),
 						2: ((notside_centre-step_len,notside_centre+step_len),		notside_z),
@@ -91,14 +160,14 @@ class Spider:
 						4: ((-step_len, step_len),									side_z),
 						5: ((notside_centre-step_len, notside_centre+step_len),		notside_z)
 						}
-		self.legs = [SpiderLeg(x, range_x=self.ranges[x][0], z=self.ranges[x][1]) for x in range(6)]
+		self.legs = [SpiderLeg(x, range_x=self.ranges[x][0], y=y, h=h, z=self.ranges[x][1]) for x in range(6)]
 
 
 class SpiderLeg(Leg):
-	def __init__(self, leg_id, range_x=(-50, 50), range_y=(-80, -50), z = Spider.coxa + Spider.femur + 40):
+	def __init__(self, leg_id, range_x, y, h, z):
 		self.leg_id = leg_id
 		ids = Spider.leg_to_servo[leg_id]
-		super().__init__(ids, [Spider.middle_poss[x] for x in ids], [Spider.half_pi_poss[x] for x in ids], Spider.coxa, Spider.femur, Spider.tibia, range_x, range_y, z)
+		super().__init__(ids, [Spider.middle_poss[x] for x in ids], [Spider.half_pi_poss[x] for x in ids], Spider.coxa, Spider.femur, Spider.tibia, range_x, y, h, z)
 
 
 class Move:
@@ -120,7 +189,7 @@ class Move:
 		t = self.i * (self.range_t[1] - self.range_t[0]) / self.accuracy + self.range_t[0]
 		point = self.move_fun(t)
 
-		self.leg.set_point_norm(point, self.time/self.accuracy)
+		self.leg.set_point(point, self.time/self.accuracy)
 		if self.i == self.accuracy: self.ready = True
 
 class Task:
