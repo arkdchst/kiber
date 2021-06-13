@@ -1,0 +1,26 @@
+{\frac {{\rm d}^{2}}{{\rm d}{t}^{2}}}\alpha \left( t \right) =-2\,{
+\frac { \left( {\frac {\rm d}{{\rm d}t}}\alpha \left( t \right) 
+ \right)  \left( {\frac {\rm d}{{\rm d}t}}\phi \left( t \right) 
+ \right) \sin \left( 2\,\beta \left( t \right) -2\,\phi \left( t
+ \right)  \right) +200\,\sin \left( -\phi \left( t \right) +\beta
+ \left( t \right)  \right)  \left( {\frac {\rm d}{{\rm d}t}}\alpha
+ \left( t \right)  \right) {\frac {\rm d}{{\rm d}t}}\phi \left( t
+ \right) -200\,\sin \left( \phi \left( t \right)  \right)  \left( {
+\frac {\rm d}{{\rm d}t}}\alpha \left( t \right)  \right) {\frac 
+{\rm d}{{\rm d}t}}\phi \left( t \right) - \left( {\frac {\rm d}{
+{\rm d}t}}\beta \left( t \right)  \right)  \left( {\frac {\rm d}{
+{\rm d}t}}\alpha \left( t \right)  \right) \sin \left( 2\,\beta
+ \left( t \right) -2\,\phi \left( t \right)  \right) -200\,\sin
+ \left( -\phi \left( t \right) +\beta \left( t \right)  \right) 
+ \left( {\frac {\rm d}{{\rm d}t}}\alpha \left( t \right)  \right) {
+\frac {\rm d}{{\rm d}t}}\beta \left( t \right) - \left( {\frac {\rm d}
+{{\rm d}t}}\beta \left( t \right)  \right)  \left( {\frac {\rm d}{
+{\rm d}t}}\alpha \left( t \right)  \right) \sin \left( 2\,\beta
+ \left( t \right)  \right) -400\, \left( {\frac {\rm d}{{\rm d}t}}
+\beta \left( t \right)  \right)  \left( {\frac {\rm d}{{\rm d}t}}
+\alpha \left( t \right)  \right) \sin \left( \beta \left( t \right) 
+ \right) -1}{\cos \left( 2\,\beta \left( t \right)  \right) +\cos
+ \left( 2\,\beta \left( t \right) -2\,\phi \left( t \right)  \right) +
+400\,\cos \left( -\phi \left( t \right) +\beta \left( t \right) 
+ \right) +400\,\cos \left( \phi \left( t \right)  \right) +800\,\cos
+ \left( \beta \left( t \right)  \right) +1206}}
